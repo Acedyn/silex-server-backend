@@ -1,0 +1,38 @@
+version: "3.9"
+   
+services:
+  silex_db_dev:
+    image: postgres
+    container_name: silex_db_dev
+    volumes:
+      - silex_db_dev:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=silex
+      - POSTGRES_USER=pipeline
+      - POSTGRES_PASSWORD=pipeline
+    ports:
+      - "5434:5432"
+    networks:
+      - silex
+  silex_api_dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: silex_api_dev
+    container_name: silex_api_dev
+    command: python silex_server_backend/manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8002:8000"
+    depends_on:
+      - silex_db_dev
+    networks:
+      - silex
+
+volumes:
+  silex_db_dev:
+    name: silex_db_dev
+
+networks:
+  silex:
+    name: silex
+    driver: bridge
