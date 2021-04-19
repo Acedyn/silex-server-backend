@@ -20,7 +20,7 @@ services:
       dockerfile: Dockerfile
     image: silex_api_dev
     container_name: silex_api_dev
-    command: python silex_server_backend/manage.py runserver 0.0.0.0:8000
+    command: bash -c "python silex_server_backend/manage.py makemigrations api && python silex_server_backend/manage.py migrate && python silex_server_backend/manage.py runserver 0.0.0.0:8000"
     ports:
       - "8002:8000"
     depends_on:
