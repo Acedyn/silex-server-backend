@@ -11,6 +11,10 @@ from django.db.models import CASCADE
 from django.utils.text import slugify
 from datetime import datetime
 
+########################################
+## Tables for the silex_server_backend database
+########################################
+
 class Base(Model):
     deleted_at = DateTimeField(null=True)
     updated_at = DateTimeField(null=True)
