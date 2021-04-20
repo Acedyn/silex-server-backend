@@ -17,22 +17,22 @@ from datetime import datetime
 
 class Base(Model):
     deleted_at = DateTimeField(null=True)
-    updated_at = DateTimeField(null=True)
-    created_at = DateTimeField(null=True, default=datetime.now)
+    updated_at = DateTimeField(default=datetime.now)
+    created_at = DateTimeField(default=datetime.now)
+    framerate = FloatField(default=25.0)
+    width = PositiveIntegerField(default=1920)
+    height = PositiveIntegerField(default=1080)
 
     class Meta:
         abstract = True
 
 class Project(Base):
-    code = SlugField(default="untitled")
-    name = CharField(default="untitled", max_length=250)
+    name = SlugField(default="untitled")
+    label = CharField(default="untitled", max_length=250)
     root = CharField(max_length=250)
-    framerate = FloatField(default=25.0)
-    width = PositiveIntegerField(default=1920)
-    height = PositiveIntegerField(default=1080)
 
     def save(self, *args, **kwargs):
-        self.code = slugify(self.name).replace("-", "_").replace(" ", "_")
+        self.name = slugify(self.name).replace("-", "_").replace(" ", "_")
         return super().save(*args, **kwargs)
 
 class Sequence(Base):
@@ -46,9 +46,6 @@ class Shot(Base):
     index = PositiveIntegerField()
     project = ForeignKey(Project, on_delete=CASCADE, related_name="shots")
     sequence = ForeignKey(Sequence, on_delete=CASCADE, related_name="shots")
-    framerate = FloatField(default=25.0)
-    width = PositiveIntegerField(default=1920)
-    height = PositiveIntegerField(default=1080)
 
     class Meta:
         unique_together = (("index", "project", "sequence"),)
@@ -65,15 +62,15 @@ class Frame(Base):
 
 class Asset(Base):
     project = ForeignKey(Project, on_delete=CASCADE, related_name="assets")
-    code = SlugField(default="untitled")
-    name = CharField(default="untitled", max_length=250)
+    name = SlugField(default="untitled")
+    label = CharField(default="untitled", max_length=250)
 
     def save(self, *args, **kwargs):
-        self.code = slugify(self.name).replace("-", "_").replace(" ", "_")
+        self.name = slugify(self.label).replace("-", "_").replace(" ", "_")
         return super().save(*args, **kwargs)
 
     class Meta:
-        unique_together = (("code", "project"),)
+        unique_together = (("name", "project"),)
 
 class Task(Base):
     project = ForeignKey(Project, on_delete=CASCADE, related_name="tasks")
