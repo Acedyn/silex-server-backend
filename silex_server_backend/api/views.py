@@ -4,10 +4,10 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from api.serializers import UserSerializer, GroupSerializer
 
-
 ########################################
 ## Views are the interface between the user and the backend
 ########################################
+
 
 # Inteface to edit/view users
 class UserViewSet(viewsets.ModelViewSet):

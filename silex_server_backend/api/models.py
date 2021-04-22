@@ -1,15 +1,30 @@
-from django.db.models import Model
-from django.db.models import CharField
-from django.db.models import BooleanField
-from django.db.models import FloatField
-from django.db.models import ForeignKey
-from django.db.models import IntegerField
-from django.db.models import SlugField
-from django.db.models import PositiveIntegerField
-from django.db.models import DateTimeField
-from django.db.models import CASCADE
+from django.db.models import (
+    Model, 
+    CharField, 
+    BooleanField, 
+    FloatField, 
+    IntegerField, 
+    SlugField, 
+    PositiveIntegerField, 
+    DateTimeField, 
+    ForeignKey, 
+    CASCADE,
+    Q
+)
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.utils.text import slugify
+from api.validators import path_validator, color_validator
 from datetime import datetime
+import random
+
+########################################
+## Utility
+########################################
+
+def random_hexa_color() -> str:
+    r = lambda: random.randint(0,255)
+    return '#%02X%02X%02X' % (r(),r(),r())
 
 ########################################
 ## Tables for the silex_server_backend database
@@ -19,6 +34,12 @@ class Base(Model):
     deleted_at = DateTimeField(null=True)
     updated_at = DateTimeField(default=datetime.now)
     created_at = DateTimeField(default=datetime.now)
+
+    class Meta:
+        abstract = True
+
+class Metadata(Model):
+    root = CharField(validators=[path_validator], max_length=250, null=True)
     framerate = FloatField(default=25.0)
     width = PositiveIntegerField(default=1920)
     height = PositiveIntegerField(default=1080)
@@ -26,16 +47,16 @@ class Base(Model):
     class Meta:
         abstract = True
 
-class Project(Base):
+class Project(Base, Metadata):
     name = SlugField(default="untitled")
-    label = CharField(default="untitled", max_length=250)
-    root = CharField(max_length=250)
+    label = CharField(default="untitled", max_length=50)
+    color = CharField(validators=[color_validator], max_length=7, unique=True, default=random_hexa_color)
 
     def save(self, *args, **kwargs):
-        self.name = slugify(self.name).replace("-", "_").replace(" ", "_")
+        self.name = slugify(self.name)
         return super().save(*args, **kwargs)
 
-class Sequence(Base):
+class Sequence(Base, Metadata):
     index = PositiveIntegerField()
     project = ForeignKey(Project, on_delete=CASCADE, related_name="sequences")
 
@@ -52,9 +73,9 @@ class Shot(Base):
 
 class Frame(Base):
     index = PositiveIntegerField()
-    shot = ForeignKey(Shot, on_delete=CASCADE, related_name="frames")
     project = ForeignKey(Project, on_delete=CASCADE, related_name="frames")
     sequence = ForeignKey(Sequence, on_delete=CASCADE, related_name="frames")
+    shot = ForeignKey(Shot, on_delete=CASCADE, related_name="frames")
     valid = BooleanField(default=False)
 
     class Meta:
@@ -74,5 +95,13 @@ class Asset(Base):
 
 class Task(Base):
     project = ForeignKey(Project, on_delete=CASCADE, related_name="tasks")
-    code = SlugField(default="untitled")
-    name = CharField(default="untitled", max_length=250)
+    name = SlugField(default="untitled")
+    label = CharField(default="untitled", max_length=250)
+
+    limit = Q(app_label="api", model="Sequence") | \
+        Q(app_label="api", model="Shot") | \
+        Q(app_label="api", model="Asset")
+
+    entity_type = ForeignKey(ContentType, on_delete=CASCADE, limit_choices_to=limit, null=True)
+    entity_id = PositiveIntegerField(null=True)
+    entity_object = GenericForeignKey("entity_type", "entity_id")
