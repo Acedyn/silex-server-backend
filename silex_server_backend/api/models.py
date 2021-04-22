@@ -48,12 +48,12 @@ class Metadata(Model):
         abstract = True
 
 class Project(Base, Metadata):
-    name = SlugField(default="untitled")
+    name = SlugField(default="untitled", unique=True)
     label = CharField(default="untitled", max_length=50)
     color = CharField(validators=[color_validator], max_length=7, unique=True, default=random_hexa_color)
 
     def save(self, *args, **kwargs):
-        self.name = slugify(self.name)
+        self.name = slugify(self.label)
         return super().save(*args, **kwargs)
 
 class Sequence(Base, Metadata):
@@ -83,7 +83,7 @@ class Frame(Base):
 
 class Asset(Base):
     project = ForeignKey(Project, on_delete=CASCADE, related_name="assets")
-    name = SlugField(default="untitled")
+    name = SlugField(default="untitled", unique=True)
     label = CharField(default="untitled", max_length=250)
 
     def save(self, *args, **kwargs):

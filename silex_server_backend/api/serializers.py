@@ -31,33 +31,39 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Project
         fields = '__all__'
+        read_only_fields = ('deleted_at', 'updated_at', 'created_at', 'name')
 
 # Set the sequence serializers
 class SequenceSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Sequence
         fields = '__all__'
+        read_only_fields = ('deleted_at', 'updated_at', 'created_at', 'index')
 
 # Set the shot serializers
 class ShotSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Shot
         fields = '__all__'
+        read_only_fields = ('deleted_at', 'updated_at', 'created_at', 'index')
 
 # Set the frame serializers
 class FrameSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Frame
         fields = '__all__'
+        read_only_fields = ('deleted_at', 'updated_at', 'created_at', 'index')
 
 # Set the asset serializers
 class AssetSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Asset
         fields = '__all__'
+        read_only_fields = ('deleted_at', 'updated_at', 'created_at', 'name')
 
 # Set the task serializers
 class TaskSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Task
         fields = '__all__'
+        read_only_fields = ('deleted_at', 'updated_at', 'created_at', 'name')
