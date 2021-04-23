@@ -13,9 +13,9 @@ from django.db.models import (
 )
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
 from django.utils.text import slugify
 from api.validators import path_validator, color_validator
-from datetime import datetime
 import random
 
 ########################################
@@ -32,14 +32,14 @@ def random_hexa_color() -> str:
 
 class Base(Model):
     deleted_at = DateTimeField(null=True)
-    updated_at = DateTimeField(default=datetime.now)
-    created_at = DateTimeField(default=datetime.now)
+    updated_at = DateTimeField(default=timezone.now)
+    created_at = DateTimeField(default=timezone.now)
 
     class Meta:
         abstract = True
 
 class Metadata(Model):
-    root = CharField(validators=[path_validator], max_length=250, null=True)
+    root = CharField(validators=[path_validator], max_length=250, null=True, unique=True)
     framerate = FloatField(default=25.0)
     width = PositiveIntegerField(default=1920)
     height = PositiveIntegerField(default=1080)
@@ -50,11 +50,14 @@ class Metadata(Model):
 class Project(Base, Metadata):
     name = SlugField(default="untitled", unique=True)
     label = CharField(default="untitled", max_length=50)
-    color = CharField(validators=[color_validator], max_length=7, unique=True, default=random_hexa_color)
+    color = CharField(validators=[color_validator], max_length=7, default=random_hexa_color)
 
     def save(self, *args, **kwargs):
         self.name = slugify(self.label)
         return super().save(*args, **kwargs)
+
+    class Meta:
+        ordering = ['-id']
 
 class Sequence(Base, Metadata):
     index = PositiveIntegerField()
@@ -62,6 +65,7 @@ class Sequence(Base, Metadata):
 
     class Meta:
         unique_together = (("index", "project"),)
+        ordering = ['-id']
 
 class Shot(Base):
     index = PositiveIntegerField()
@@ -70,6 +74,7 @@ class Shot(Base):
 
     class Meta:
         unique_together = (("index", "project", "sequence"),)
+        ordering = ['-id']
 
 class Frame(Base):
     index = PositiveIntegerField()
@@ -80,6 +85,7 @@ class Frame(Base):
 
     class Meta:
         unique_together = (("index", "project", "sequence", "shot"),)
+        ordering = ['-id']
 
 class Asset(Base):
     project = ForeignKey(Project, on_delete=CASCADE, related_name="assets")
@@ -92,6 +98,7 @@ class Asset(Base):
 
     class Meta:
         unique_together = (("name", "project"),)
+        ordering = ['-id']
 
 class Task(Base):
     project = ForeignKey(Project, on_delete=CASCADE, related_name="tasks")
@@ -105,3 +112,6 @@ class Task(Base):
     entity_type = ForeignKey(ContentType, on_delete=CASCADE, limit_choices_to=limit, null=True)
     entity_id = PositiveIntegerField(null=True)
     entity_object = GenericForeignKey("entity_type", "entity_id")
+
+    class Meta:
+        ordering = ['-id']
