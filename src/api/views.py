@@ -1,25 +1,19 @@
 from django.contrib.auth.models import User, Group
-from api.models import (
-    Project,
-    Sequence,
-    Shot,
-    Frame,
-    Asset,
-    Task
-)
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework import permissions, viewsets
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from api.models import Project, Sequence, Shot, Frame, Asset, Task
 from api.serializers import (
-    UserSerializer, 
+    UserSerializer,
     GroupSerializer,
     ProjectSerializer,
     SequenceSerializer,
     ShotSerializer,
     FrameSerializer,
     AssetSerializer,
-    TaskSerializer
+    TaskSerializer,
 )
-from django.shortcuts import render
-from rest_framework import permissions, viewsets
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
 ########################################
 ## Views are the interface between the user and the backend
@@ -28,7 +22,7 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 
 # Inteface to edit/view users
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all().order_by('-date_joined')
+    queryset = User.objects.all().order_by("-date_joined")
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
@@ -41,6 +35,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
 
+
 # Inteface to edit/view projects
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
@@ -48,9 +43,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
 
-    def create(self, *args, **kwargs):
-        # TODO: Find a way to override the input body
-        return super().create(*args, **kwargs)
 
 # Inteface to edit/view sequence
 class SequenceViewSet(viewsets.ModelViewSet):
@@ -59,12 +51,14 @@ class SequenceViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
 
+
 # Inteface to edit/view shots
 class ShotViewSet(viewsets.ModelViewSet):
     queryset = Shot.objects.all()
     serializer_class = ShotSerializer
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
+
 
 # Inteface to edit/view frames
 class FrameViewSet(viewsets.ModelViewSet):
@@ -73,6 +67,7 @@ class FrameViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
 
+
 # Inteface to edit/view assets
 class AssetViewSet(viewsets.ModelViewSet):
     queryset = Asset.objects.all()
@@ -80,10 +75,10 @@ class AssetViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
 
+
 # Inteface to edit/view tasks
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
-
