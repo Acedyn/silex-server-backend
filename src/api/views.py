@@ -1,6 +1,4 @@
 from django.contrib.auth.models import User, Group
-from rest_framework.response import Response
-from rest_framework import status
 from rest_framework import permissions, viewsets
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from api.models import Project, Sequence, Shot, Frame, Asset, Task
