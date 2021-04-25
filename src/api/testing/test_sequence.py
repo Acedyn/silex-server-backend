@@ -17,6 +17,8 @@ class SequenceTestCase(AuthentificatedTestBase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Sequence.objects.count(), 2)
+        self.assertEqual(response.data["framerate"], 24.975)
+        self.assertEqual(response.data["width"], 4096)
 
     def test_create_existing_sequence(self):
         print("\nTesting : Create existing sequence ")

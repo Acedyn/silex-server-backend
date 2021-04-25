@@ -14,7 +14,6 @@ from django.db.models import (
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
-from django.utils.text import slugify
 from api.validators import path_validator, color_validator
 
 ########################################
@@ -99,10 +98,6 @@ class Asset(Base):
     project = ForeignKey(Project, on_delete=CASCADE, related_name="assets")
     name = SlugField(default="untitled", unique=True)
     label = CharField(default="untitled", max_length=250)
-
-    def save(self, *args, **kwargs):
-        self.name = slugify(self.label).replace("-", "_").replace(" ", "_")
-        return super().save(*args, **kwargs)
 
     class Meta:
         unique_together = (("name", "project"),)

@@ -8,16 +8,15 @@ class ProjectTestCase(AuthentificatedTestBase):
         print("\nTesting : Create new project ")
         data = {
             "root": "/anna/hello_world",
-            "framerate": 25,
             "width": 4096,
             "height": 2160,
             "label": "Hello World!",
-            "name": "hello-world",
         }
         response = self.client.post("/projects/", data, format="json")
-
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Project.objects.count(), 2)
+        self.assertEqual(response.data["framerate"], 25.0)
+        self.assertEqual(response.data["width"], 4096)
 
     def test_create_existing_project(self):
         print("\nTesting : Create existing project ")
@@ -26,8 +25,7 @@ class ProjectTestCase(AuthentificatedTestBase):
             "framerate": 25,
             "width": 4096,
             "height": 2160,
-            "label": "TEST PIPE",
-            "name": "test-pipe",
+            "label": "Test Pipe",
         }
         response = self.client.post("/projects/", data, format="json")
 
