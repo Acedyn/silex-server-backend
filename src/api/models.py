@@ -72,7 +72,7 @@ class Sequence(Base, Metadata):
         ordering = ["-id"]
 
 
-class Shot(Base):
+class Shot(Base, Metadata):
     index = PositiveIntegerField()
     project = ForeignKey(Project, on_delete=CASCADE, related_name="shots")
     sequence = ForeignKey(Sequence, on_delete=CASCADE, related_name="shots")
@@ -82,7 +82,7 @@ class Shot(Base):
         ordering = ["-id"]
 
 
-class Frame(Base):
+class Frame(Base, Metadata):
     index = PositiveIntegerField()
     project = ForeignKey(Project, on_delete=CASCADE, related_name="frames")
     sequence = ForeignKey(Sequence, on_delete=CASCADE, related_name="frames")
@@ -94,7 +94,7 @@ class Frame(Base):
         ordering = ["-id"]
 
 
-class Asset(Base):
+class Asset(Base, Metadata):
     project = ForeignKey(Project, on_delete=CASCADE, related_name="assets")
     name = SlugField(default="untitled", unique=True)
     label = CharField(default="untitled", max_length=250)
@@ -104,7 +104,7 @@ class Asset(Base):
         ordering = ["-id"]
 
 
-class Task(Base):
+class Task(Base, Metadata):
     project = ForeignKey(Project, on_delete=CASCADE, related_name="tasks")
     name = SlugField(default="untitled")
     label = CharField(default="untitled", max_length=250)

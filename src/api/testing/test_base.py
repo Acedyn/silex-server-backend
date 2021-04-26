@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
-from api.models import Project, Sequence
+from api.models import Project, Sequence, Shot, Frame, Asset, Task
 
 
 class AuthentificatedTestBase(TestCase):
@@ -28,6 +28,7 @@ class AuthentificatedTestBase(TestCase):
         # Create dummy sequence
         sequence_data = {
             "root": "/tars/test_pipe/seq010",
+            "framerate": self.dummy_project.framerate,
             "index": 10,
             "width": 4096,
             "height": 2160,
@@ -36,3 +37,17 @@ class AuthentificatedTestBase(TestCase):
         self.dummy_sequence = Sequence.objects.create(**sequence_data)
         self.dummy_sequence.save()
         self.assertEqual(Sequence.objects.count(), 1)
+
+        # Create dummy shot
+        shot_data = {
+            "root": "/tars/test_pipe/seq010/sh020",
+            "framerate": self.dummy_sequence.framerate,
+            "index": 20,
+            "width": 4096,
+            "height": 2160,
+            "project": self.dummy_project,
+            "sequence": self.dummy_sequence,
+        }
+        self.dummy_shot = Shot.objects.create(**shot_data)
+        self.dummy_shot.save()
+        self.assertEqual(Shot.objects.count(), 1)
