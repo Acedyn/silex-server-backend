@@ -3,6 +3,7 @@ from django.contrib.auth.models import User, Group
 from django.db.models import Model
 from django.utils.text import slugify
 from django.urls import resolve
+from rest_framework.reverse import reverse
 from rest_framework.response import Response
 from rest_framework import permissions, viewsets, status, serializers
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -32,8 +33,14 @@ class ParentedEntityViewSet(viewsets.ModelViewSet):
 
     # Override the method called when creating an entity (POST) to auto fill the metadata fields
     def create(self, request, *args, **kwargs):
-        # Make a copy of the data object because it's immutable
-        updated_data = request.data.copy()
+        # Take the data from the request only if no data parameters where given
+        # This allow reusability of this function since request is immutable and can't be copied
+        if "data" in kwargs:
+            updated_data = kwargs["data"]
+            kwargs.pop("data")
+        else:
+            # Make a copy of the data object because it's immutable
+            updated_data = request.data.copy()
         # Get the parent to inherit metadata
         if self.parent_model_name in updated_data:
             # Get the project from the url
@@ -205,6 +212,39 @@ class ShotViewSet(ParentedEntityViewSet):
     parent_model_name = "sequence"
     parents_chain = ("sequence", "project")
 
+    # Override the method called when creating an project (POST) to auto fill the parents fields
+    def create(self, request, *args, **kwargs):
+        # Make a copy of the data object because it's immutable
+        updated_data = request.data.copy()
+        # If no sequence where given, don't do anything
+        # The error will be raised by the serializer
+        if "sequence" not in updated_data:
+            return super().create(request=request, *args, **kwargs)
+
+        # Get the sequence from the url
+        sequence_path = urlparse(updated_data["sequence"]).path
+        try:
+            sequence_match = resolve(sequence_path)
+            sequence_queryset = Sequence.objects.all()
+            sequence = sequence_queryset.get(id=sequence_match.kwargs["pk"])
+
+            # Set the parent field from the given sequence
+            project_url = (
+                str(reverse(viewname="project-list", request=request))
+                + str(sequence.project.id)
+                + "/"
+            )
+            updated_data["project"] = project_url
+
+        except Exception as ex:
+            # Just print the exeption as a warning, the error will be thrown by the serializer
+            print(
+                f"WARNING: {type(ex)} : \
+                Could not find parent from url for request : {request.data}"
+            )
+
+        return super().create(request=request, data=updated_data, *args, **kwargs)
+
 
 # Inteface to edit/view frames
 class FrameViewSet(ParentedEntityViewSet):
@@ -215,6 +255,45 @@ class FrameViewSet(ParentedEntityViewSet):
     parent_model_class = Shot
     parent_model_name = "shot"
     parents_chain = ("shot", "sequence", "project")
+
+    # Override the method called when creating an project (POST) to auto fill the parents fields
+    def create(self, request, *args, **kwargs):
+        # Make a copy of the data object because it's immutable
+        updated_data = request.data.copy()
+        # If no shot where given, don't do anything
+        # The error will be raised by the serializer
+        if "shot" not in updated_data:
+            return super().create(request=request, *args, **kwargs)
+
+        # Get the shot from the url
+        shot_path = urlparse(updated_data["shot"]).path
+        try:
+            shot_match = resolve(shot_path)
+            shot_queryset = Shot.objects.all()
+            shot = shot_queryset.get(id=shot_match.kwargs["pk"])
+
+            # Set the parent field from the given shot
+            sequence_url = (
+                str(reverse(viewname="sequence-list", request=request))
+                + str(shot.sequence.id)
+                + "/"
+            )
+            updated_data["sequence"] = sequence_url
+            project_url = (
+                str(reverse(viewname="project-list", request=request))
+                + str(shot.sequence.project.id)
+                + "/"
+            )
+            updated_data["project"] = project_url
+
+        except Exception as ex:
+            # Just print the exeption as a warning, the error will be thrown by the serializer
+            print(
+                f"WARNING: {type(ex)} : \
+                Could not find parent from url for request : {request.data}"
+            )
+
+        return super().create(request=request, data=updated_data, *args, **kwargs)
 
 
 # Inteface to edit/view assets

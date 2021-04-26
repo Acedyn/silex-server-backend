@@ -13,7 +13,6 @@ class ShotTestCase(AuthentificatedTestBase):
             "index": 30,
             "width": 4096,
             "height": 2160,
-            "project": f"http://testserver/projects/{self.dummy_project.id}/",
             "sequence": f"http://testserver/sequences/{self.dummy_sequence.id}/",
         }
         response = self.client.post("/shots/", data, format="json")
@@ -44,7 +43,6 @@ class ShotTestCase(AuthentificatedTestBase):
             "index": 10,
             "width": 4096,
             "height": 2160,
-            "project": f"http://testserver/projects/{self.dummy_project.id}/",
             "sequence": f"http://testserver/sequences/{self.dummy_sequence.id}/",
         }
         response = self.client.post("/shots/", data, format="json")

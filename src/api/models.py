@@ -84,6 +84,11 @@ class Shot(Base, Metadata):
         )
         ordering = ["-id"]
 
+    # Override the save() method to auto fill the project field with the given sequence
+    def save(self, *args, **kwargs):
+        self.project = self.sequence.project
+        super().save(*args, **kwargs)
+
 
 class Frame(Base, Metadata):
     index = PositiveIntegerField()
@@ -98,6 +103,12 @@ class Frame(Base, Metadata):
             ("project", "sequence", "shot", "root"),
         )
         ordering = ["-id"]
+
+    # Override the save() method to auto fill the project and sequence fields with the given shot
+    def save(self, *args, **kwargs):
+        self.sequence = self.shot.sequence
+        self.project = self.shot.project
+        super().save(*args, **kwargs)
 
 
 class Asset(Base, Metadata):

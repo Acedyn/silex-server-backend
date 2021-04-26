@@ -45,7 +45,6 @@ class AuthentificatedTestBase(TestCase):
             "index": 20,
             "width": 4096,
             "height": 2160,
-            "project": self.dummy_project,
             "sequence": self.dummy_sequence,
         }
         self.dummy_shot = Shot.objects.create(**shot_data)
