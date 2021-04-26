@@ -42,9 +42,7 @@ class Base(Model):
 
 
 class Metadata(Model):
-    root = CharField(
-        validators=[path_validator], max_length=250, null=True, unique=True
-    )
+    root = CharField(validators=[path_validator], max_length=250, null=True)
     framerate = FloatField(default=25.0)
     width = PositiveIntegerField(default=1920)
     height = PositiveIntegerField(default=1080)
@@ -62,6 +60,7 @@ class Project(Base, Metadata):
 
     class Meta:
         ordering = ["-id"]
+        unique_together = (("root"),)
 
 
 class Sequence(Base, Metadata):
@@ -69,7 +68,7 @@ class Sequence(Base, Metadata):
     project = ForeignKey(Project, on_delete=CASCADE, related_name="sequences")
 
     class Meta:
-        unique_together = (("index", "project"),)
+        unique_together = (("index", "project"), ("project", "root"))
         ordering = ["-id"]
 
 
@@ -79,7 +78,10 @@ class Shot(Base, Metadata):
     sequence = ForeignKey(Sequence, on_delete=CASCADE, related_name="shots")
 
     class Meta:
-        unique_together = (("index", "project", "sequence"),)
+        unique_together = (
+            ("index", "project", "sequence"),
+            ("project", "sequence", "root"),
+        )
         ordering = ["-id"]
 
 
@@ -91,7 +93,10 @@ class Frame(Base, Metadata):
     valid = BooleanField(default=False)
 
     class Meta:
-        unique_together = (("index", "project", "sequence", "shot"),)
+        unique_together = (
+            ("index", "project", "sequence", "shot"),
+            ("project", "sequence", "shot", "root"),
+        )
         ordering = ["-id"]
 
 
@@ -101,7 +106,7 @@ class Asset(Base, Metadata):
     label = CharField(default="untitled", max_length=250)
 
     class Meta:
-        unique_together = (("name", "project"),)
+        unique_together = (("name", "project"), ("project", "root"))
         ordering = ["-id"]
 
 
