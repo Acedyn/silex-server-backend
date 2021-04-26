@@ -27,7 +27,7 @@ class AuthentificatedTestBase(TestCase):
 
         # Create dummy sequence
         sequence_data = {
-            "root": "/tars/test_pipe/seq010",
+            "root": "/seq010",
             "framerate": self.dummy_project.framerate,
             "index": 10,
             "width": 4096,
@@ -40,7 +40,7 @@ class AuthentificatedTestBase(TestCase):
 
         # Create dummy shot
         shot_data = {
-            "root": "/tars/test_pipe/seq010/sh020",
+            "root": "/sh020",
             "framerate": self.dummy_sequence.framerate,
             "index": 20,
             "width": 4096,

@@ -54,7 +54,11 @@ class ProjectTestCase(AuthentificatedTestBase):
         # Get the already existing project, created in test_base.py
         response = self.client.get("/projects/")
 
+        # Test the returned values
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["results"][0]["name"], "test-pipe")
+        self.assertEqual(response.data["results"][0]["path"], "/tars/test_pipe")
+        # Test the stored values
         self.assertEqual(Project.objects.count(), 1)
         self.assertEqual(Project.objects.first().name, "test-pipe")
 

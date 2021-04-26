@@ -9,7 +9,7 @@ class ShotTestCase(AuthentificatedTestBase):
     def test_create_new_shot(self):
         print("\nTesting : Create new shot ")
         data = {
-            "root": "/tars/test_pipe/seq020/sh030",
+            "root": "/sh030",
             "index": 30,
             "width": 4096,
             "height": 2160,
@@ -40,7 +40,7 @@ class ShotTestCase(AuthentificatedTestBase):
     def test_create_existing_shot(self):
         print("\nTesting : Create existing shot ")
         data = {
-            "root": "/tars/test_pipe/seq010/sh020",
+            "root": "/sh020",
             "index": 10,
             "width": 4096,
             "height": 2160,
@@ -57,7 +57,13 @@ class ShotTestCase(AuthentificatedTestBase):
         print("\nTesting : Retrieve shot ")
         response = self.client.get("/shots/")
 
+        # Test the returned values
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["results"][0]["index"], 20)
+        self.assertEqual(
+            response.data["results"][0]["path"], "/tars/test_pipe/seq010/sh020"
+        )
+        # Test the stored values
         self.assertEqual(Shot.objects.count(), 1)
         self.assertEqual(Shot.objects.first().index, 20)
 
@@ -68,7 +74,7 @@ class ShotTestCase(AuthentificatedTestBase):
         self.assertEqual(get_response.data["count"], 1)
 
         data = {
-            "root": "/tars/test_pipe/seq020/sh50",
+            "root": "/sh30",
         }
         shot_url = get_response.data["results"][0]["url"]
         update_response = self.client.patch(shot_url, data, format="json")
@@ -76,10 +82,10 @@ class ShotTestCase(AuthentificatedTestBase):
         # Test the returned values
         self.assertEqual(update_response.status_code, status.HTTP_200_OK)
         self.assertEqual(Shot.objects.count(), 1)
-        self.assertEqual(Shot.objects.first().root, "/tars/test_pipe/seq020/sh50")
+        self.assertEqual(Shot.objects.first().root, "/sh30")
         # Test the stored values
         self.dummy_shot.refresh_from_db()
-        self.assertEqual(self.dummy_shot.root, "/tars/test_pipe/seq020/sh50")
+        self.assertEqual(self.dummy_shot.root, "/sh30")
 
     def test_delete_shot(self):
         print("\nTesting : Delete shot ")

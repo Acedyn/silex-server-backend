@@ -9,7 +9,7 @@ class SequenceTestCase(AuthentificatedTestBase):
     def test_create_new_sequence(self):
         print("\nTesting : Create new sequence ")
         data = {
-            "root": "/tars/test_pipe/seq020",
+            "root": "/seq020",
             "index": 20,
             "width": 4096,
             "height": 2160,
@@ -39,7 +39,7 @@ class SequenceTestCase(AuthentificatedTestBase):
     def test_create_existing_sequence(self):
         print("\nTesting : Create existing sequence ")
         data = {
-            "root": "/tars/test_pipe/seq020",
+            "root": "/seq020",
             "index": 10,
             "width": 4096,
             "height": 2160,
@@ -55,7 +55,11 @@ class SequenceTestCase(AuthentificatedTestBase):
         # Get the already existing sequence, created in test_base.py
         response = self.client.get("/sequences/")
 
+        # Test the returned values
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["results"][0]["index"], 10)
+        self.assertEqual(response.data["results"][0]["path"], "/tars/test_pipe/seq010")
+        # Test the stored values
         self.assertEqual(Sequence.objects.count(), 1)
         self.assertEqual(Sequence.objects.first().index, 10)
 
@@ -66,7 +70,7 @@ class SequenceTestCase(AuthentificatedTestBase):
         self.assertEqual(get_response.data["count"], 1)
 
         data = {
-            "root": "/tars/test_pipe/seq020",
+            "root": "/seq020",
         }
         sequence_url = get_response.data["results"][0]["url"]
         update_response = self.client.patch(sequence_url, data, format="json")
@@ -74,10 +78,10 @@ class SequenceTestCase(AuthentificatedTestBase):
         # Test the returned values
         self.assertEqual(update_response.status_code, status.HTTP_200_OK)
         self.assertEqual(Sequence.objects.count(), 1)
-        self.assertEqual(Sequence.objects.first().root, "/tars/test_pipe/seq020")
+        self.assertEqual(Sequence.objects.first().root, "/seq020")
         # Test the stored values
         self.dummy_sequence.refresh_from_db()
-        self.assertEqual(self.dummy_sequence.root, "/tars/test_pipe/seq020")
+        self.assertEqual(self.dummy_sequence.root, "/seq020")
 
     def test_remove_sequence(self):
         print("\nTesting : Delete sequence ")

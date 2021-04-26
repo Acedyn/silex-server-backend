@@ -28,8 +28,9 @@ class ParentedEntityViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.HyperlinkedModelSerializer
     parent_model_class = Model
     parent_model_name = "undefined"
+    parents_chain = ()
 
-    # Override the method called when creating an project to auto fill the metadata fields
+    # Override the method called when creating an entity (POST) to auto fill the metadata fields
     def create(self, request, *args, **kwargs):
         # Make a copy of the data object because it's immutable
         updated_data = request.data.copy()
@@ -69,6 +70,44 @@ class ParentedEntityViewSet(viewsets.ModelViewSet):
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
+    # Override the method called when getting an entity (GET) to add a resolved root path
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        # Make a copy of the data object because it's immutable
+        updated_data = serializer.data.copy()
+        path = updated_data["root"]
+        # Loop over all the parents and build the output path
+        for parent in self.parents_chain:
+            path = str(getattr(instance, parent).root) + path
+
+        updated_data["path"] = path
+        return Response(updated_data)
+
+    # Override the method called when getting multiple entities (GET) to add a resolved root path
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            # Make a copy of the data object because it's immutable
+            updated_data = serializer.data.copy()
+            for data_index in range(len(updated_data)):
+                path = updated_data[data_index]["root"]
+                # Not sure using _args is the best solution here
+                instance = serializer.child._args[0][data_index]
+                # Loop over all the parents and build the output path
+                for parent in self.parents_chain:
+                    path = str(getattr(instance, parent).root) + path
+
+                updated_data[data_index]["path"] = path
+
+            return self.get_paginated_response(updated_data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
 
 ########################################
 ## Views are the interface between the user and the backend
@@ -98,7 +137,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
 
-    # Override the method called when creating an project to auto fill the name field
+    # Override the method called when creating an project (POST) to auto fill the name field
     def create(self, request, *args, **kwargs):
         # Make a copy of the data object because it's immutable
         updated_data = request.data.copy()
@@ -115,6 +154,35 @@ class ProjectViewSet(viewsets.ModelViewSet):
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
+    # Override the method called when getting a project (GET) to add a resolved root path
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        # Make a copy of the data object because it's immutable
+        updated_data = serializer.data.copy()
+        # We just pass the same value as root
+        # We do that to have consistant response so the "path" entry is always there
+        updated_data["path"] = updated_data["root"]
+        return Response(updated_data)
+
+    # Override the method called when getting multiple projects (GET) to add a resolved root path
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            # Make a copy of the data object because it's immutable
+            updated_data = serializer.data.copy()
+            for single_data in updated_data:
+                # We just pass the same value as root
+                # We do that to have consistant response so the "path" entry is always there
+                single_data["path"] = single_data["root"]
+            return self.get_paginated_response(updated_data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
 
 # Inteface to edit/view sequence
 class SequenceViewSet(ParentedEntityViewSet):
@@ -124,6 +192,7 @@ class SequenceViewSet(ParentedEntityViewSet):
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     parent_model_class = Project
     parent_model_name = "project"
+    parents_chain = ("project",)
 
 
 # Inteface to edit/view shots
@@ -134,6 +203,7 @@ class ShotViewSet(ParentedEntityViewSet):
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     parent_model_class = Sequence
     parent_model_name = "sequence"
+    parents_chain = ("sequence", "project")
 
 
 # Inteface to edit/view frames
@@ -144,6 +214,7 @@ class FrameViewSet(ParentedEntityViewSet):
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     parent_model_class = Shot
     parent_model_name = "shot"
+    parents_chain = ("shot", "sequence", "project")
 
 
 # Inteface to edit/view assets
@@ -154,6 +225,7 @@ class AssetViewSet(ParentedEntityViewSet):
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     parent_model_class = Project
     parent_model_name = "project"
+    parents_chain = ("project",)
 
 
 # Inteface to edit/view tasks
