@@ -22,6 +22,7 @@ from api.serializers import (
 ## Utility
 ########################################
 
+
 # Abstract class to implement the inheritance of parent fields
 class ParentedEntityViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.HyperlinkedModelSerializer
@@ -63,6 +64,7 @@ class ParentedEntityViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
+
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
@@ -71,6 +73,7 @@ class ParentedEntityViewSet(viewsets.ModelViewSet):
 ########################################
 ## Views are the interface between the user and the backend
 ########################################
+
 
 # Inteface to edit/view users
 class UserViewSet(viewsets.ModelViewSet):
