@@ -1,4 +1,5 @@
-from django.contrib.auth.models import User, Group
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from rest_framework import serializers
 from api.models import Project, Sequence, Shot, Frame, Asset, Task
 
@@ -9,7 +10,7 @@ from api.models import Project, Sequence, Shot, Frame, Asset, Task
 # Set the user serializers
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = User
+        model = get_user_model()
         fields = ["url", "username", "email", "groups"]
 
 

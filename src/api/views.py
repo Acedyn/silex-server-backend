@@ -1,5 +1,6 @@
 from urllib.parse import urlparse
-from django.contrib.auth.models import User, Group
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.db.models import Model
 from django.utils.text import slugify
 from django.urls import resolve
@@ -123,7 +124,7 @@ class ParentedEntityViewSet(viewsets.ModelViewSet):
 
 # Inteface to edit/view users
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all().order_by("-date_joined")
+    queryset = get_user_model().objects.all().order_by("-date_joined")
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [SessionAuthentication, BasicAuthentication]

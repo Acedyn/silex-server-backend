@@ -7,12 +7,14 @@ from django.db.models import (
     SlugField,
     PositiveIntegerField,
     DateTimeField,
+    ManyToManyField,
     ForeignKey,
     CASCADE,
     Q,
 )
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from api.validators import path_validator, color_validator
 
@@ -140,3 +142,7 @@ class Task(Base, Metadata):
 
     class Meta:
         ordering = ["-id"]
+
+
+class User(AbstractUser):
+    projects = ManyToManyField(Project)

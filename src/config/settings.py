@@ -29,14 +29,15 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+AUTH_USER_MODEL = "api.User"
 
 # Application definition
 
 INSTALLED_APPS = [
     "api.apps.ApiConfig",
+    "corsheaders",
     "rest_framework",
     "rest_framework.authtoken",
-    "corsheaders",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

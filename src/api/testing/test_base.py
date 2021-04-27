@@ -1,14 +1,14 @@
 from django.test import TestCase
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
-from api.models import Project, Sequence, Shot, Frame, Asset, Task
+from api.models import Project, Sequence, Shot
 
 
 class AuthentificatedTestBase(TestCase):
     def setUp(self) -> None:
         # Connect user
         self.client = APIClient()
-        self.user = User.objects.create(username="test")
+        self.user = get_user_model().objects.create(username="test")
         self.user.save()
         self.client.force_authenticate(self.user)
 
