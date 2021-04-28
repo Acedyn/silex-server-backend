@@ -18,7 +18,6 @@ class ShotTestCase(AuthentificatedTestBase):
         response = self.client.post("/shots/", data, format="json")
         # Test the returned values
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Shot.objects.count(), 2)
         self.assertEqual(response.data["framerate"], 24.975)
         self.assertEqual(response.data["width"], 4096)
         shot_path = urlparse(response.data["url"]).path
@@ -35,6 +34,7 @@ class ShotTestCase(AuthentificatedTestBase):
         finally:
             self.assertEqual(self.shot.framerate, 24.975)
             self.assertEqual(self.shot.width, 4096)
+            self.assertEqual(Shot.objects.count(), 2)
 
     def test_create_existing_shot(self):
         print("\nTesting : Create existing shot ")

@@ -17,7 +17,6 @@ class ProjectTestCase(AuthentificatedTestBase):
         response = self.client.post("/projects/", data, format="json")
         # Test the returned values
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Project.objects.count(), 2)
         self.assertEqual(response.data["framerate"], 25.0)
         self.assertEqual(response.data["width"], 4096)
         project_path = urlparse(response.data["url"]).path
@@ -34,6 +33,7 @@ class ProjectTestCase(AuthentificatedTestBase):
         finally:
             self.assertEqual(self.project.framerate, 25.0)
             self.assertEqual(self.project.width, 4096)
+            self.assertEqual(Project.objects.count(), 2)
 
     def test_create_existing_project(self):
         print("\nTesting : Create existing project ")

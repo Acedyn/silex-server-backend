@@ -149,4 +149,4 @@ class Task(Base, Metadata):
 
 class User(AbstractUser):
     projects = ManyToManyField(Project)
-    email = EmailField(blank=True, unique=True)
+    email = EmailField(unique=True)

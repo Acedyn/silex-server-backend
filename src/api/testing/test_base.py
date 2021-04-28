@@ -6,10 +6,17 @@ from api.models import Project, Sequence, Shot
 
 class AuthentificatedTestBase(TestCase):
     def setUp(self) -> None:
-        # Connect user
+        # Create users
         self.client = APIClient()
-        self.user = get_user_model().objects.create(username="test")
+        self.user = get_user_model().objects.create(
+            username="test", email="test@silex.com"
+        )
         self.user.save()
+        self.dummy_user = get_user_model().objects.create(
+            username="dummy", email="dummy@silex.com"
+        )
+        self.dummy_user.save()
+        # Connect user
         self.client.force_authenticate(self.user)
 
         # Create dummy project

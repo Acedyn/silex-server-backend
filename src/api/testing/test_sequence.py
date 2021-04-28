@@ -18,7 +18,6 @@ class SequenceTestCase(AuthentificatedTestBase):
         response = self.client.post("/sequences/", data, format="json")
         # Test the returned values
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Sequence.objects.count(), 2)
         self.assertEqual(response.data["framerate"], 24.975)
         self.assertEqual(response.data["width"], 4096)
         sequence_path = urlparse(response.data["url"]).path
@@ -35,6 +34,7 @@ class SequenceTestCase(AuthentificatedTestBase):
         finally:
             self.assertEqual(self.sequence.framerate, 24.975)
             self.assertEqual(self.sequence.width, 4096)
+            self.assertEqual(Sequence.objects.count(), 2)
 
     def test_create_existing_sequence(self):
         print("\nTesting : Create existing sequence ")
