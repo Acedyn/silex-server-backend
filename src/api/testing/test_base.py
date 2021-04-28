@@ -48,9 +48,9 @@ class AuthentificatedTestBase(TestCase):
 
         # Create dummy shot
         shot_data = {
-            "root": "/sh020",
+            "root": "/sh010",
             "framerate": self.dummy_sequence.framerate,
-            "index": 20,
+            "index": 10,
             "width": 4096,
             "height": 2160,
             "sequence": self.dummy_sequence,

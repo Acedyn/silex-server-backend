@@ -1,32 +1,51 @@
 from django.contrib.auth.models import Group
 from rest_framework import status
-from api.models import Sequence, Shot
 from api.testing.test_base import AuthentificatedTestBase
+from api.testing.test_shot import create_new_shot, update_shot, delete_shot
+from api.testing.test_sequence import (
+    create_new_sequence,
+    update_sequence,
+    delete_sequence,
+)
+
+
+########################################
+## Test utility
+########################################
+
+
+def crud_sequence(test_case):
+    response_create = create_new_sequence(test_case)
+    response_update = update_sequence(test_case)
+    response_delete = delete_sequence(test_case)
+
+    return response_create, response_update, response_delete
+
+
+def crud_shot(test_case):
+    response_create = create_new_shot(test_case)
+    response_update = update_shot(test_case)
+    response_delete = delete_shot(test_case)
+
+    return response_create, response_update, response_delete
+
+
+########################################
+## Running test
+########################################
 
 
 class PermissionsTestCase(AuthentificatedTestBase):
-    def test_create_unauthorized_sequence(self):
-        print("\nTesting : Create unauthorized sequence ")
+    def test_sequence_ownership_authorisation(self):
+        print("\nTesting : CRUD on sequences with different ownership relation")
         # Login as dummy_user
         self.client.force_authenticate(self.dummy_user)
+        # CRUD unauthorized sequence
+        response_create, response_update, response_delete = crud_sequence(self)
+        self.assertEqual(response_create.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response_update.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response_delete.status_code, status.HTTP_403_FORBIDDEN)
 
-        data = {
-            "root": "/seq020",
-            "index": 20,
-            "width": 4096,
-            "height": 2160,
-            "project": f"http://testserver/projects/{self.dummy_project.id}/",
-        }
-        response = self.client.post("/sequences/", data, format="json")
-        # Test the returned values
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        # Test the stored values
-        self.assertEqual(Sequence.objects.count(), 1)
-
-    def test_create_authorized_sequence(self):
-        print("\nTesting : Create unauthorized shot ")
-        # Login as dummy_user
-        self.client.force_authenticate(self.dummy_user)
         # Add dummy_project to dummy_user's projects
         self.dummy_user.projects.set(
             [
@@ -35,70 +54,14 @@ class PermissionsTestCase(AuthentificatedTestBase):
         )
         self.dummy_user.save()
 
-        data = {
-            "root": "/seq020",
-            "index": 20,
-            "width": 4096,
-            "height": 2160,
-            "project": f"http://testserver/projects/{self.dummy_project.id}/",
-        }
-        response = self.client.post("/sequences/", data, format="json")
-        # Test the returned values
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        # Test the stored values
-        self.assertEqual(Sequence.objects.count(), 2)
+        # CRUD authorized sequence
+        response_create, response_update, response_delete = crud_sequence(self)
+        self.assertEqual(response_create.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response_update.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_delete.status_code, status.HTTP_204_NO_CONTENT)
 
-    def test_update_unauthorized_sequence(self):
-        print("\nTesting : update unauthorized sequence ")
-        # Login as dummy_user
-        self.client.force_authenticate(self.dummy_user)
-
-        # Get the already existing sequence, created in test_base.py
-        get_response = self.client.get("/sequences/")
-        self.assertEqual(get_response.data["count"], 1)
-
-        data = {
-            "root": "/seq020",
-        }
-        sequence_url = get_response.data["results"][0]["url"]
-        update_response = self.client.patch(sequence_url, data, format="json")
-
-        # Test the returned values
-        self.assertEqual(update_response.status_code, status.HTTP_403_FORBIDDEN)
-        # Test the stored values
-        self.dummy_sequence.refresh_from_db()
-        self.assertEqual(self.dummy_sequence.root, "/seq010")
-
-    def test_update_authorized_sequence(self):
-        print("\nTesting : update unauthorized sequence ")
-        # Login as dummy_user
-        self.client.force_authenticate(self.dummy_user)
-        # Add dummy_project to dummy_user's projects
-        self.dummy_user.projects.set(
-            [
-                self.dummy_project,
-            ]
-        )
-        self.dummy_user.save()
-
-        # Get the already existing sequence, created in test_base.py
-        get_response = self.client.get("/sequences/")
-        self.assertEqual(get_response.data["count"], 1)
-
-        data = {
-            "root": "/seq020",
-        }
-        sequence_url = get_response.data["results"][0]["url"]
-        update_response = self.client.patch(sequence_url, data, format="json")
-
-        # Test the returned values
-        self.assertEqual(update_response.status_code, status.HTTP_200_OK)
-        # Test the stored values
-        self.dummy_sequence.refresh_from_db()
-        self.assertEqual(self.dummy_sequence.root, "/seq020")
-
-    def test_create_sequence_elevated_permission(self):
-        print("\nTesting : Create shot with elevated permissions ")
+    def test_sequence_permission_elevation(self):
+        print("\nTesting : CRUD on sequences with different elevated permissions")
         # Login as dummy_user
         self.client.force_authenticate(self.dummy_user)
         # Attach the user to the developper_group so he gets all right
@@ -106,21 +69,38 @@ class PermissionsTestCase(AuthentificatedTestBase):
         self.dummy_user.groups.add(developper_group)
         self.dummy_user.save()
 
-        data = {
-            "root": "/seq020",
-            "index": 20,
-            "width": 4096,
-            "height": 2160,
-            "project": f"http://testserver/projects/{self.dummy_project.id}/",
-        }
-        response = self.client.post("/sequences/", data, format="json")
-        # Test the returned values
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        # Test the stored values
-        self.assertEqual(Sequence.objects.count(), 2)
+        # CRUD authorized sequence
+        response_create, response_update, response_delete = crud_sequence(self)
+        self.assertEqual(response_create.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response_update.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_delete.status_code, status.HTTP_204_NO_CONTENT)
 
-    def test_update_sequence_elevated_permission(self):
-        print("\nTesting : Create shot with elevated permissions ")
+    def test_shot_ownership_authorisation(self):
+        print("\nTesting : CRUD on shots with different ownership relation")
+        # Login as dummy_user
+        self.client.force_authenticate(self.dummy_user)
+        # CRUD unauthorized shot
+        response_create, response_update, response_delete = crud_shot(self)
+        self.assertEqual(response_create.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response_update.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response_delete.status_code, status.HTTP_403_FORBIDDEN)
+
+        # Add dummy_project to dummy_user's projects
+        self.dummy_user.projects.set(
+            [
+                self.dummy_project,
+            ]
+        )
+        self.dummy_user.save()
+
+        # CRUD authorized shot
+        response_create, response_update, response_delete = crud_shot(self)
+        self.assertEqual(response_create.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response_update.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_delete.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_shot_permission_elevation(self):
+        print("\nTesting : CRUD on shots with different elevated permissions")
         # Login as dummy_user
         self.client.force_authenticate(self.dummy_user)
         # Attach the user to the developper_group so he gets all right
@@ -128,110 +108,8 @@ class PermissionsTestCase(AuthentificatedTestBase):
         self.dummy_user.groups.add(developper_group)
         self.dummy_user.save()
 
-        # Get the already existing sequence, created in test_base.py
-        get_response = self.client.get("/sequences/")
-        self.assertEqual(get_response.data["count"], 1)
-
-        data = {
-            "root": "/seq020",
-        }
-        sequence_url = get_response.data["results"][0]["url"]
-        update_response = self.client.patch(sequence_url, data, format="json")
-
-        # Test the returned values
-        self.assertEqual(update_response.status_code, status.HTTP_200_OK)
-        # Test the stored values
-        self.dummy_sequence.refresh_from_db()
-        self.assertEqual(self.dummy_sequence.root, "/seq020")
-
-    def test_create_unauthorized_shot(self):
-        print("\nTesting : Create unauthorized shot ")
-        # Login as dummy_user
-        self.client.force_authenticate(self.dummy_user)
-
-        data = {
-            "root": "/sh030",
-            "index": 30,
-            "width": 4096,
-            "height": 2160,
-            "sequence": f"http://testserver/sequences/{self.dummy_sequence.id}/",
-        }
-        response = self.client.post("/shots/", data, format="json")
-        # Test the returned values
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        # Test the stored values
-        self.assertEqual(Shot.objects.count(), 1)
-
-    def test_create_authorized_shot(self):
-        print("\nTesting : Create unauthorized shot ")
-        # Login as dummy_user
-        self.client.force_authenticate(self.dummy_user)
-        # Add dummy_project to dummy_user's projects
-        self.dummy_user.projects.set(
-            [
-                self.dummy_project,
-            ]
-        )
-        self.dummy_user.save()
-
-        data = {
-            "root": "/sh030",
-            "index": 30,
-            "width": 4096,
-            "height": 2160,
-            "sequence": f"http://testserver/sequences/{self.dummy_sequence.id}/",
-        }
-        response = self.client.post("/shots/", data, format="json")
-        # Test the returned values
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        # Test the stored values
-        self.assertEqual(Shot.objects.count(), 2)
-
-    def test_update_unauthorized_shot(self):
-        print("\nTesting : Update unauthorized shot ")
-        # Login as dummy_user
-        self.client.force_authenticate(self.dummy_user)
-
-        # Get the already existing shot, created in test_base.py
-        get_response = self.client.get("/shots/")
-        self.assertEqual(get_response.data["count"], 1)
-
-        data = {
-            "root": "/sh30",
-        }
-        shot_url = get_response.data["results"][0]["url"]
-        update_response = self.client.patch(shot_url, data, format="json")
-
-        # Test the returned values
-        self.assertEqual(update_response.status_code, status.HTTP_403_FORBIDDEN)
-        # Test the stored values
-        self.dummy_shot.refresh_from_db()
-        self.assertEqual(self.dummy_shot.root, "/sh020")
-
-    def test_update_authorized_shot(self):
-        print("\nTesting : Update unauthorized shot ")
-        # Login as dummy_user
-        self.client.force_authenticate(self.dummy_user)
-        # Add dummy_project to dummy_user's projects
-        self.dummy_user.projects.set(
-            [
-                self.dummy_project,
-            ]
-        )
-        self.dummy_user.save()
-
-        # Get the already existing shot, created in test_base.py
-        get_response = self.client.get("/shots/")
-        self.assertEqual(get_response.data["count"], 1)
-
-        data = {
-            "root": "/sh030",
-        }
-        shot_url = get_response.data["results"][0]["url"]
-        update_response = self.client.patch(shot_url, data, format="json")
-
-        # Test the returned values
-        self.assertEqual(update_response.status_code, status.HTTP_200_OK)
-        # Test the stored values
-        self.dummy_shot.refresh_from_db()
-        self.assertEqual(self.dummy_shot.root, "/sh030")
+        # CRUD authorized shot
+        response_create, response_update, response_delete = crud_shot(self)
+        self.assertEqual(response_create.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response_update.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_delete.status_code, status.HTTP_204_NO_CONTENT)
