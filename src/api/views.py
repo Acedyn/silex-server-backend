@@ -7,7 +7,7 @@ from rest_framework import permissions, viewsets, status, serializers
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from api.utils import request_inherit_fields, get_url_from_instance
 from api.models import Project, Sequence, Shot, Frame, Asset, Task, User
-from api.permissions import ProjectOwnerPermission
+from api.permissions import ProjectOwnerPermission, IsAuthenticatedOrReadCreate
 from api.serializers import (
     UserSerializer,
     GroupSerializer,
@@ -106,7 +106,7 @@ class ParentedEntityViewSet(viewsets.ModelViewSet):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = get_user_model().objects.all().order_by("-date_joined")
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadCreate]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
 
 
@@ -114,7 +114,6 @@ class UserViewSet(viewsets.ModelViewSet):
 class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
 
 

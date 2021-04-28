@@ -5,6 +5,9 @@ from api.models import Project
 
 class ProjectOwnerPermission(permissions.BasePermission):
     def has_permission(self, request, view):
+        # If the user has permissions to create any project
+        if request.user.has_perm("api.add_any_entity") and request.method == "POST":
+            return True
         # Restict access only for POST requests
         if request.method != "POST":
             return True
@@ -28,6 +31,15 @@ class ProjectOwnerPermission(permissions.BasePermission):
         )
 
     def has_object_permission(self, request, view, obj):
+        # If the user has permissions to edit any project
+        if request.user.has_perm("api.change_any_entity") and request.method == "PATCH":
+            return True
+        # If the user has permissions to delete any project
+        if (
+            request.user.has_perm("api.delete_any_entity")
+            and request.method == "DELETE"
+        ):
+            return True
         # Give permissions for GET requests
         if request.method == "GET":
             return True
@@ -38,4 +50,14 @@ class ProjectOwnerPermission(permissions.BasePermission):
         return (
             obj.project in request.user.projects.all()
             or obj.project.owner == request.user
+        )
+
+
+class IsAuthenticatedOrReadCreate(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return bool(
+            request.method in permissions.SAFE_METHODS
+            or request.method == "POST"
+            or request.user
+            and request.user.is_authenticated
         )

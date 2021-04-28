@@ -72,18 +72,17 @@ class ShotTestCase(AuthentificatedTestBase):
         self.assertEqual(get_response.data["count"], 1)
 
         data = {
-            "root": "/sh30",
+            "root": "/sh030",
         }
         shot_url = get_response.data["results"][0]["url"]
         update_response = self.client.patch(shot_url, data, format="json")
 
         # Test the returned values
         self.assertEqual(update_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Shot.objects.count(), 1)
-        self.assertEqual(Shot.objects.first().root, "/sh30")
         # Test the stored values
         self.dummy_shot.refresh_from_db()
-        self.assertEqual(self.dummy_shot.root, "/sh30")
+        self.assertEqual(Shot.objects.count(), 1)
+        self.assertEqual(self.dummy_shot.root, "/sh030")
 
     def test_delete_shot(self):
         print("\nTesting : Delete shot ")

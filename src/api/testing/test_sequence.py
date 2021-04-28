@@ -77,10 +77,9 @@ class SequenceTestCase(AuthentificatedTestBase):
 
         # Test the returned values
         self.assertEqual(update_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Sequence.objects.count(), 1)
-        self.assertEqual(Sequence.objects.first().root, "/seq020")
         # Test the stored values
         self.dummy_sequence.refresh_from_db()
+        self.assertEqual(Sequence.objects.count(), 1)
         self.assertEqual(self.dummy_sequence.root, "/seq020")
 
     def test_delete_sequence(self):
