@@ -83,7 +83,7 @@ class SequenceTestCase(AuthentificatedTestBase):
         self.dummy_sequence.refresh_from_db()
         self.assertEqual(self.dummy_sequence.root, "/seq020")
 
-    def test_remove_sequence(self):
+    def test_delete_sequence(self):
         print("\nTesting : Delete sequence ")
         # Get the already existing sequence, created in test_base.py
         get_response = self.client.get("/sequences/")

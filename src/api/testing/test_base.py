@@ -20,6 +20,7 @@ class AuthentificatedTestBase(TestCase):
             "height": 2160,
             "label": "TEST PIPE",
             "name": "test-pipe",
+            "owner": self.user,
         }
         self.dummy_project = Project.objects.create(**project_data)
         self.dummy_project.save()

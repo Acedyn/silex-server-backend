@@ -11,6 +11,7 @@ from django.db.models import (
     ManyToManyField,
     ForeignKey,
     CASCADE,
+    SET_NULL,
     Q,
 )
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -57,6 +58,7 @@ class Metadata(Model):
 class Project(Base, Metadata):
     name = SlugField(default="untitled", unique=True)
     label = CharField(default="untitled", max_length=50)
+    owner = ForeignKey("User", on_delete=SET_NULL, null=True)
     color = CharField(
         validators=[color_validator], max_length=7, default=random_hexa_color
     )

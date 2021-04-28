@@ -5,8 +5,8 @@ from django.utils.text import slugify
 from rest_framework.response import Response
 from rest_framework import permissions, viewsets, status, serializers
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from api.utils import request_inherit_fields
-from api.models import Project, Sequence, Shot, Frame, Asset, Task
+from api.utils import request_inherit_fields, get_url_from_instance
+from api.models import Project, Sequence, Shot, Frame, Asset, Task, User
 from api.permissions import ProjectOwnerPermission
 from api.serializers import (
     UserSerializer,
@@ -26,6 +26,7 @@ from api.serializers import (
 
 # Abstract class to implement the inheritance of parent fields
 class ParentedEntityViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, ProjectOwnerPermission]
     serializer_class = serializers.HyperlinkedModelSerializer
     parent_model_class = Model
     parents_chain = ("undefined",)
@@ -131,6 +132,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
         # Set the name according to the given label
         if "label" in updated_data:
             updated_data["name"] = slugify(updated_data["label"])
+        if request.user.is_authenticated and isinstance(request.user, User):
+            updated_data["owner"] = get_url_from_instance(request.user, request)
 
         # Create the serializer using the updated input data
         serializer = ProjectSerializer(data=updated_data, context={"request": request})
@@ -175,7 +178,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
 class SequenceViewSet(ParentedEntityViewSet):
     queryset = Sequence.objects.all()
     serializer_class = SequenceSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     parent_model_class = Project
     parents_chain = ("project",)
@@ -185,7 +187,6 @@ class SequenceViewSet(ParentedEntityViewSet):
 class ShotViewSet(ParentedEntityViewSet):
     queryset = Shot.objects.all()
     serializer_class = ShotSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     parent_model_class = Sequence
     parents_chain = ("sequence", "project")
@@ -195,7 +196,6 @@ class ShotViewSet(ParentedEntityViewSet):
 class FrameViewSet(ParentedEntityViewSet):
     queryset = Frame.objects.all()
     serializer_class = FrameSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     parent_model_class = Shot
     parents_chain = ("shot", "sequence", "project")
@@ -205,7 +205,6 @@ class FrameViewSet(ParentedEntityViewSet):
 class AssetViewSet(ParentedEntityViewSet):
     queryset = Asset.objects.all()
     serializer_class = AssetSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     parent_model_class = Project
     parents_chain = ("project",)

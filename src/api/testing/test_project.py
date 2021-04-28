@@ -82,7 +82,7 @@ class ProjectTestCase(AuthentificatedTestBase):
         self.dummy_project.refresh_from_db()
         self.assertEqual(self.dummy_project.root, "/tars/hello_world")
 
-    def test_remove_project(self):
+    def test_delete_project(self):
         print("\nTesting : Delete project ")
         # Get the already existing project, created in test_base.py
         get_response = self.client.get("/projects/")

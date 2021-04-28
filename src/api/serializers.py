@@ -22,6 +22,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             "password",
             "projects",
         ]
+        read_only_fields = ("projects", "is_superuser", "date_joined")
 
 
 # Set the user serializers

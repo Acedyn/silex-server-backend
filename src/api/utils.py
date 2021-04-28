@@ -21,7 +21,14 @@ def get_instance_from_url(
         ) from ex
 
 
-# Add missing fiel
+def get_url_from_instance(model, request) -> str:
+    return (
+        str(reverse(viewname=f"{type(model).__name__.lower()}-list", request=request))
+        + f"{str(model.id)}/"
+    )
+
+
+# Add missing fields
 def request_inherit_fields(data, request, parents_chain, parent_model_class):
     # Check is the parent is given
     if parents_chain[0] not in data:
@@ -46,10 +53,7 @@ def request_inherit_fields(data, request, parents_chain, parent_model_class):
     sub_parents = (parent for parent in parents_chain if parent != parents_chain[0])
     for sub_parent in sub_parents:
         # Build the url that lead to the sub_parent
-        sub_parent_url = (
-            str(reverse(viewname=f"{sub_parent}-list", request=request))
-            + f"{str(getattr(parent, sub_parent).id)}/"
-        )
+        sub_parent_url = get_url_from_instance(getattr(parent, sub_parent), request)
         data[sub_parent] = sub_parent_url
 
     return data
