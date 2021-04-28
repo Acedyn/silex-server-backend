@@ -11,7 +11,17 @@ from api.models import Project, Sequence, Shot, Frame, Asset, Task
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ["url", "username", "email", "groups"]
+        fields = [
+            "url",
+            "username",
+            "email",
+            "groups",
+            "is_superuser",
+            "first_name",
+            "last_name",
+            "password",
+            "projects",
+        ]
 
 
 # Set the user serializers

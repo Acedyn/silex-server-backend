@@ -7,6 +7,7 @@ from django.db.models import (
     SlugField,
     PositiveIntegerField,
     DateTimeField,
+    EmailField,
     ManyToManyField,
     ForeignKey,
     CASCADE,
@@ -146,3 +147,4 @@ class Task(Base, Metadata):
 
 class User(AbstractUser):
     projects = ManyToManyField(Project)
+    email = EmailField(blank=True, unique=True)

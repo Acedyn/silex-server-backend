@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework import permissions, viewsets, status, serializers
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from api.models import Project, Sequence, Shot, Frame, Asset, Task
+from api.permissions import ProjectOwnerPermission
 from api.serializers import (
     UserSerializer,
     GroupSerializer,
@@ -142,7 +143,7 @@ class GroupViewSet(viewsets.ModelViewSet):
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
 
     # Override the method called when creating an project (POST) to auto fill the name field
@@ -196,7 +197,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 class SequenceViewSet(ParentedEntityViewSet):
     queryset = Sequence.objects.all()
     serializer_class = SequenceSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     parent_model_class = Project
     parent_model_name = "project"
@@ -207,7 +208,7 @@ class SequenceViewSet(ParentedEntityViewSet):
 class ShotViewSet(ParentedEntityViewSet):
     queryset = Shot.objects.all()
     serializer_class = ShotSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     parent_model_class = Sequence
     parent_model_name = "sequence"
@@ -251,7 +252,7 @@ class ShotViewSet(ParentedEntityViewSet):
 class FrameViewSet(ParentedEntityViewSet):
     queryset = Frame.objects.all()
     serializer_class = FrameSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     parent_model_class = Shot
     parent_model_name = "shot"
@@ -301,7 +302,7 @@ class FrameViewSet(ParentedEntityViewSet):
 class AssetViewSet(ParentedEntityViewSet):
     queryset = Asset.objects.all()
     serializer_class = AssetSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     parent_model_class = Project
     parent_model_name = "project"
@@ -312,5 +313,5 @@ class AssetViewSet(ParentedEntityViewSet):
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     authentication_classes = [SessionAuthentication, BasicAuthentication]
