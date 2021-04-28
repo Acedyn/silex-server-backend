@@ -32,6 +32,25 @@ def random_hexa_color() -> str:
 
 
 ########################################
+## Permissions
+########################################
+project_ownership_permissions = [
+    (
+        "add_any_entity",
+        "Can add entity that belong to a project the user does not own",
+    ),
+    (
+        "change_any_entity",
+        "Can change entity that belong to a project the user does not own",
+    ),
+    (
+        "delete_any_entity",
+        "Can delete entity that belong to a project the user does not own",
+    ),
+]
+
+
+########################################
 ## Tables for the silex_server_backend database
 ########################################
 
@@ -75,6 +94,7 @@ class Sequence(Base, Metadata):
     class Meta:
         unique_together = (("index", "project"), ("project", "root"))
         ordering = ["-id"]
+        permissions = project_ownership_permissions
 
 
 class Shot(Base, Metadata):
@@ -88,6 +108,7 @@ class Shot(Base, Metadata):
             ("project", "sequence", "root"),
         )
         ordering = ["-id"]
+        permissions = project_ownership_permissions
 
     # Override the save() method to auto fill the project field with the given sequence
     def save(self, *args, **kwargs):
@@ -108,6 +129,7 @@ class Frame(Base, Metadata):
             ("project", "sequence", "shot", "root"),
         )
         ordering = ["-id"]
+        permissions = project_ownership_permissions
 
     # Override the save() method to auto fill the project and sequence fields with the given shot
     def save(self, *args, **kwargs):
@@ -124,6 +146,7 @@ class Asset(Base, Metadata):
     class Meta:
         unique_together = (("name", "project"), ("project", "root"))
         ordering = ["-id"]
+        permissions = project_ownership_permissions
 
 
 class Task(Base, Metadata):
