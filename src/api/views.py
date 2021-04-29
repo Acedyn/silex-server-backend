@@ -4,7 +4,7 @@ from django.db.models import Model
 from django.utils.text import slugify
 from rest_framework.response import Response
 from rest_framework import permissions, viewsets, status, serializers
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from api.utils import request_inherit_fields, get_url_from_instance
 from api.models import Project, Sequence, Shot, Frame, Asset, Task, User
 from api.permissions import ProjectOwnerPermission, IsAuthenticatedOrReadCreate
@@ -27,6 +27,7 @@ from api.serializers import (
 # Abstract class to implement the inheritance of parent fields
 class ParentedEntityViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, ProjectOwnerPermission]
+    authentication_classes = [SessionAuthentication, BasicAuthentication, TokenAuthentication]
     serializer_class = serializers.HyperlinkedModelSerializer
     parent_model_class = Model
     parents_chain = ("undefined",)
@@ -107,14 +108,14 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = get_user_model().objects.all().order_by("-date_joined")
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticatedOrReadCreate]
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    authentication_classes = [SessionAuthentication, BasicAuthentication, TokenAuthentication]
 
 
 # Inteface to edit/view groups
 class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    authentication_classes = [SessionAuthentication, BasicAuthentication, TokenAuthentication]
 
 
 # Inteface to edit/view projects
@@ -122,7 +123,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    authentication_classes = [SessionAuthentication, BasicAuthentication, TokenAuthentication]
 
     # Override the method called when creating an project (POST) to auto fill the name field
     def create(self, request, *args, **kwargs):
@@ -177,7 +178,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
 class SequenceViewSet(ParentedEntityViewSet):
     queryset = Sequence.objects.all()
     serializer_class = SequenceSerializer
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
     parent_model_class = Project
     parents_chain = ("project",)
 
@@ -186,7 +186,6 @@ class SequenceViewSet(ParentedEntityViewSet):
 class ShotViewSet(ParentedEntityViewSet):
     queryset = Shot.objects.all()
     serializer_class = ShotSerializer
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
     parent_model_class = Sequence
     parents_chain = ("sequence", "project")
 
@@ -195,7 +194,6 @@ class ShotViewSet(ParentedEntityViewSet):
 class FrameViewSet(ParentedEntityViewSet):
     queryset = Frame.objects.all()
     serializer_class = FrameSerializer
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
     parent_model_class = Shot
     parents_chain = ("shot", "sequence", "project")
 
@@ -204,7 +202,6 @@ class FrameViewSet(ParentedEntityViewSet):
 class AssetViewSet(ParentedEntityViewSet):
     queryset = Asset.objects.all()
     serializer_class = AssetSerializer
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
     parent_model_class = Project
     parents_chain = ("project",)
 
@@ -214,4 +211,4 @@ class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    authentication_classes = [SessionAuthentication, BasicAuthentication, TokenAuthentication]

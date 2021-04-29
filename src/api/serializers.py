@@ -17,12 +17,24 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             "email",
             "groups",
             "is_superuser",
-            "first_name",
-            "last_name",
             "password",
             "projects",
         ]
-        read_only_fields = ("projects", "is_superuser", "date_joined")
+        read_only_fields = ("username", "projects", "is_superuser", "date_joined")
+        extra_kwargs = {"password": {"write_only": True}}
+
+    def create(self, validated_data):
+        password = validated_data.pop("password")
+        groups = []
+        if "groups" in validated_data:
+            groups = validated_data.pop("groups")
+        validated_data["username"] = validated_data["email"].split("@")[0]
+        user = get_user_model()(**validated_data)
+        user.set_password(password)
+        user.save()
+        user.groups.set(groups)
+        user.save()
+        return user
 
 
 # Set the user serializers
