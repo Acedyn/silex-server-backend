@@ -3,9 +3,18 @@ from django.contrib.auth.models import Group
 from django.db.models import Model
 from django.utils.text import slugify
 from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
 from rest_framework import permissions, viewsets, status, serializers
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
-from api.utils import request_inherit_fields, get_url_from_instance
+from rest_framework.authentication import (
+    SessionAuthentication,
+    BasicAuthentication,
+    TokenAuthentication,
+)
+from api.utils import (
+    request_inherit_fields,
+    get_url_from_instance,
+    get_instance_from_url,
+)
 from api.models import Project, Sequence, Shot, Frame, Asset, Task, User
 from api.permissions import ProjectOwnerPermission, IsAuthenticatedOrReadCreate
 from api.serializers import (
@@ -27,7 +36,11 @@ from api.serializers import (
 # Abstract class to implement the inheritance of parent fields
 class ParentedEntityViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, ProjectOwnerPermission]
-    authentication_classes = [SessionAuthentication, BasicAuthentication, TokenAuthentication]
+    authentication_classes = [
+        SessionAuthentication,
+        BasicAuthentication,
+        TokenAuthentication,
+    ]
     serializer_class = serializers.HyperlinkedModelSerializer
     parent_model_class = Model
     parents_chain = ("undefined",)
@@ -108,14 +121,31 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = get_user_model().objects.all().order_by("-date_joined")
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticatedOrReadCreate]
-    authentication_classes = [SessionAuthentication, BasicAuthentication, TokenAuthentication]
+    authentication_classes = [
+        SessionAuthentication,
+        BasicAuthentication,
+        TokenAuthentication,
+    ]
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        user_class = get_user_model()
+        token = Token.objects.create(
+            user=get_instance_from_url(response.data["url"], user_class)
+        )
+        response.data["token"] = token.key
+        return response
 
 
 # Inteface to edit/view groups
 class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    authentication_classes = [SessionAuthentication, BasicAuthentication, TokenAuthentication]
+    authentication_classes = [
+        SessionAuthentication,
+        BasicAuthentication,
+        TokenAuthentication,
+    ]
 
 
 # Inteface to edit/view projects
@@ -123,7 +153,11 @@ class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    authentication_classes = [SessionAuthentication, BasicAuthentication, TokenAuthentication]
+    authentication_classes = [
+        SessionAuthentication,
+        BasicAuthentication,
+        TokenAuthentication,
+    ]
 
     # Override the method called when creating an project (POST) to auto fill the name field
     def create(self, request, *args, **kwargs):
@@ -133,7 +167,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if "label" in updated_data:
             updated_data["name"] = slugify(updated_data["label"])
         if request.user.is_authenticated and isinstance(request.user, User):
-            owner_serializer = UserSerializer(instance=request.user, context={'request': request})
+            owner_serializer = UserSerializer(
+                instance=request.user, context={"request": request}
+            )
             updated_data["owner"] = owner_serializer["url"].value
 
         # Create the serializer using the updated input data
@@ -212,4 +248,8 @@ class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    authentication_classes = [SessionAuthentication, BasicAuthentication, TokenAuthentication]
+    authentication_classes = [
+        SessionAuthentication,
+        BasicAuthentication,
+        TokenAuthentication,
+    ]

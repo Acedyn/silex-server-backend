@@ -2,12 +2,9 @@ from urllib.parse import urlparse
 from django.urls import resolve
 from rest_framework.reverse import reverse
 from rest_framework.exceptions import ValidationError
-from api.models import Metadata
 
 
-def get_instance_from_url(
-    url: str, instance_class: Metadata, error_name: str = "ERROR"
-) -> Metadata:
+def get_instance_from_url(url, instance_class, error_name="ERROR"):
     try:
         instance_path = urlparse(url).path
         instance_match = resolve(instance_path)
