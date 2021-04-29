@@ -1,7 +1,7 @@
 version: "3.9"
    
 services:
-  silex_db_prod:
+  silex-db-prod:
     image: postgres
     container_name: silex-db-prod
     volumes:
@@ -14,11 +14,11 @@ services:
       - "5432:5432"
     networks:
       - silex
-  silex_api_prod:
+  silex-api-prod:
     build:
       context: .
       dockerfile: Dockerfile
-    image: silex_api_prod
+    image: silex-api-prod
     container_name: silex-api-prod
     command: bash -c "python src/manage.py makemigrations api 
       && python src/manage.py migrate 
@@ -29,13 +29,13 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - silex_db_prod
+      - silex-db-prod
     networks:
       - silex
 
 volumes:
-  silex_db_prod:
-    name: silex_db_prod
+  silex-db-prod:
+    name: silex-db-prod
 
 networks:
   silex:

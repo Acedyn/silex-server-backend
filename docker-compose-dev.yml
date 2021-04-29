@@ -1,11 +1,11 @@
 version: "3.9"
    
 services:
-  silex_db_dev:
+  silex-db-dev:
     image: postgres
     container_name: silex-db-dev
     volumes:
-      - silex_db_dev:/var/lib/postgresql/data
+      - silex-db-dev:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=silex
       - POSTGRES_USER=pipeline
@@ -14,11 +14,11 @@ services:
       - "5434:5432"
     networks:
       - silex
-  silex_api_dev:
+  silex-api-dev:
     build:
       context: .
       dockerfile: Dockerfile
-    image: silex_api_dev
+    image: silex-api-dev
     container_name: silex-api-dev
     command: bash -c "python src/manage.py makemigrations api 
       && python src/manage.py migrate 
@@ -29,13 +29,13 @@ services:
     ports:
       - "8002:8000"
     depends_on:
-      - silex_db_dev
+      - silex-db-dev
     networks:
       - silex
 
 volumes:
-  silex_db_dev:
-    name: silex_db_dev
+  silex-db-dev:
+    name: silex-db-dev
 
 networks:
   silex:

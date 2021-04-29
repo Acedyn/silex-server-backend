@@ -49,7 +49,7 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Project
         fields = "__all__"
-        read_only_fields = ("deleted_at", "updated_at", "created_at")
+        read_only_fields = ("deleted_at", "updated_at", "created_at", "owner", "name")
 
 
 # Set the sequence serializers
