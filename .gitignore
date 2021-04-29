@@ -1,3 +1,6 @@
+# vim
+.vim/
+
 # Django #
 *.log
 *.pot
