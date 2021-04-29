@@ -24,7 +24,7 @@ class ProjectOwnerPermission(permissions.BasePermission):
         except Exception as ex:
             # If the parent could not be resolved, raise an exception
             raise ValidationError(
-                {f"{view.parents_chain[0]}": "This field is required"}
+                {f"{view.parents_chain[0]}": ["This field is required."]}
             ) from ex
         parent = get_instance_from_url(
             parent_url, view.parent_model_class, view.parents_chain[0]

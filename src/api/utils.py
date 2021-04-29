@@ -17,12 +17,12 @@ def get_instance_from_url(
     except Exception as ex:
         # If the parent could not be resolved, raise an exception
         raise ValidationError(
-            {f"{error_name}": "Could not find inheritance tree for this parent."}
+            {f"{error_name}": ["Invalid hyperlink - Object does not exist."]}
         ) from ex
 
 
 def get_url_from_instance(model, request) -> str:
-    # TODO : Use serializer or relational fielsds to resolve the url
+    # TODO : Use serializer or relational fields to resolve the url
     return (
         str(reverse(viewname=f"{type(model).__name__.lower()}-list", request=request))
         + f"{str(model.id)}/"
