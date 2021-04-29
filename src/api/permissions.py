@@ -1,4 +1,5 @@
 from rest_framework import permissions
+from rest_framework.exceptions import ValidationError
 from api.utils import get_instance_from_url
 from api.models import Project
 
@@ -14,8 +15,17 @@ class ProjectOwnerPermission(permissions.BasePermission):
         # If the user is not authenticated block the access
         if request.user.is_authenticated is False:
             return False
-
-        parent_url = request.data[view.parents_chain[0]]
+        # If the request is empty it means its just a request poke the server
+        if request.data == {}:
+            return True
+        # Test if the data provided the parent
+        try:
+            parent_url = request.data[view.parents_chain[0]]
+        except Exception as ex:
+            # If the parent could not be resolved, raise an exception
+            raise ValidationError(
+                {f"{view.parents_chain[0]}": "This field is required"}
+            ) from ex
         parent = get_instance_from_url(
             parent_url, view.parent_model_class, view.parents_chain[0]
         )
