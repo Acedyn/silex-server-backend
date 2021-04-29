@@ -3,7 +3,7 @@ version: "3.9"
 services:
   silex_db_prod:
     image: postgres
-    container_name: silex_db_prod
+    container_name: silex-db-prod
     volumes:
       - silex_db_prod:/var/lib/postgresql/data
     environment:
@@ -19,10 +19,10 @@ services:
       context: .
       dockerfile: Dockerfile
     image: silex_api_prod
-    container_name: silex_api_prod
-    command: bash -c "python silex_server_backend/manage.py makemigrations api 
-      && python silex_server_backend/manage.py migrate 
-      && python silex_server_backend/manage.py runserver 0.0.0.0:8000"
+    container_name: silex-api-prod
+    command: bash -c "python src/manage.py makemigrations api 
+      && python src/manage.py migrate 
+      && python src/manage.py runserver 0.0.0.0:8000"
     environment:
       - SILEX_BACKEND_CONFIG=prod
       - SILEX_BACKEND_SECRET_KEY
