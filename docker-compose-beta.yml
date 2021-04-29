@@ -5,7 +5,7 @@ services:
     image: postgres
     container_name: silex-db-prod
     volumes:
-      - silex-db-prod:/var/lib/postgresql/data
+      - silex_db_prod:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=silex
       - POSTGRES_USER=pipeline
@@ -34,8 +34,8 @@ services:
       - silex
 
 volumes:
-  silex-db-prod:
-    name: silex-db-prod
+  silex_db_prod:
+    name: silex_db_prod
 
 networks:
   silex:

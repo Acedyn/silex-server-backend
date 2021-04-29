@@ -5,7 +5,7 @@ services:
     image: postgres
     container_name: silex-db-dev
     volumes:
-      - silex-db-dev:/var/lib/postgresql/data
+      - silex_db_dev:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=silex
       - POSTGRES_USER=pipeline
@@ -34,8 +34,8 @@ services:
       - silex
 
 volumes:
-  silex-db-dev:
-    name: silex-db-dev
+  silex_db_dev:
+    name: silex_db_dev
 
 networks:
   silex:

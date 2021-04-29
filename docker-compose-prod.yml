@@ -34,8 +34,8 @@ services:
       - silex
 
 volumes:
-  silex-db-prod:
-    name: silex-db-prod
+  silex_db_prod:
+    name: silex_db_prod
 
 networks:
   silex:
