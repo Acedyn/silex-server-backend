@@ -22,6 +22,7 @@ def get_instance_from_url(
 
 
 def get_url_from_instance(model, request) -> str:
+    # TODO : Use serializer or relational fielsds to resolve the url
     return (
         str(reverse(viewname=f"{type(model).__name__.lower()}-list", request=request))
         + f"{str(model.id)}/"

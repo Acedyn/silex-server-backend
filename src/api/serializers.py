@@ -57,7 +57,7 @@ class SequenceSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Sequence
         fields = "__all__"
-        read_only_fields = ("deleted_at", "updated_at", "created_at")
+        read_only_fields = ("deleted_at", "updated_at", "created_at", "owner", "name")
 
 
 # Set the shot serializers

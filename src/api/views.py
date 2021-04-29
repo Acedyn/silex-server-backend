@@ -133,7 +133,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if "label" in updated_data:
             updated_data["name"] = slugify(updated_data["label"])
         if request.user.is_authenticated and isinstance(request.user, User):
-            updated_data["owner"] = get_url_from_instance(request.user, request)
+            owner_serializer = UserSerializer(instance=request.user, context={'request': request})
+            updated_data["owner"] = owner_serializer["url"].value
 
         # Create the serializer using the updated input data
         serializer = ProjectSerializer(data=updated_data, context={"request": request})
