@@ -27,7 +27,7 @@ class AuthentificatedTestBase(TestCase):
             "height": 2160,
             "label": "TEST PIPE",
             "name": "test-pipe",
-            "owner": self.user,
+            "created_by": self.user,
         }
         self.dummy_project = Project.objects.create(**project_data)
         self.dummy_project.save()
@@ -41,6 +41,7 @@ class AuthentificatedTestBase(TestCase):
             "width": 4096,
             "height": 2160,
             "project": self.dummy_project,
+            "created_by": self.user,
         }
         self.dummy_sequence = Sequence.objects.create(**sequence_data)
         self.dummy_sequence.save()
@@ -54,6 +55,7 @@ class AuthentificatedTestBase(TestCase):
             "width": 4096,
             "height": 2160,
             "sequence": self.dummy_sequence,
+            "created_by": self.user,
         }
         self.dummy_shot = Shot.objects.create(**shot_data)
         self.dummy_shot.save()

@@ -32,12 +32,15 @@ class ProjectOwnerPermission(permissions.BasePermission):
         # If the direct parent if the entity is already the project
         if isinstance(parent, Project):
             # Check if the project belong to the user
-            return parent in request.user.projects.all() or parent.owner == request.user
+            return (
+                parent in request.user.projects.all()
+                or parent.created_by == request.user
+            )
 
         # Check if the parent's project belong to the user
         return (
             parent.project in request.user.projects.all()
-            or parent.project.owner == request.user
+            or parent.project.created_by == request.user
         )
 
     def has_object_permission(self, request, view, obj):
@@ -59,7 +62,7 @@ class ProjectOwnerPermission(permissions.BasePermission):
         # Return true if the edited object belong to the user
         return (
             obj.project in request.user.projects.all()
-            or obj.project.owner == request.user
+            or obj.project.created_by == request.user
         )
 
 

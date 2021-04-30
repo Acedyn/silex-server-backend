@@ -18,7 +18,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
-from api.validators import path_validator, color_validator
+from api.validators import path_validator, color_validator, state_validator
 
 ########################################
 ## Utility
@@ -66,6 +66,7 @@ class Base(Model):
 
 class Metadata(Model):
     root = CharField(validators=[path_validator], max_length=250, null=True)
+    state = CharField(validators=[state_validator], max_length=10)
     framerate = FloatField(default=25.0)
     width = PositiveIntegerField(default=1920)
     height = PositiveIntegerField(default=1080)
@@ -77,9 +78,18 @@ class Metadata(Model):
 class Project(Base, Metadata):
     name = SlugField(default="untitled", unique=True)
     label = CharField(default="untitled", max_length=50)
-    owner = ForeignKey("User", on_delete=SET_NULL, null=True)
     color = CharField(
         validators=[color_validator], max_length=7, default=random_hexa_color
+    )
+    # We need to set these individualy because of the related_name argument
+    deleted_by = ForeignKey(
+        "User", on_delete=SET_NULL, null=True, related_name="deleted_projects"
+    )
+    updated_by = ForeignKey(
+        "User", on_delete=SET_NULL, null=True, related_name="updated_projects"
+    )
+    created_by = ForeignKey(
+        "User", on_delete=SET_NULL, null=True, related_name="created_projects"
     )
 
     class Meta:
@@ -90,6 +100,16 @@ class Project(Base, Metadata):
 class Sequence(Base, Metadata):
     index = PositiveIntegerField()
     project = ForeignKey(Project, on_delete=CASCADE, related_name="sequences")
+    # We need to set these individualy because of the related_name argument
+    deleted_by = ForeignKey(
+        "User", on_delete=SET_NULL, null=True, related_name="deleted_sequences"
+    )
+    updated_by = ForeignKey(
+        "User", on_delete=SET_NULL, null=True, related_name="updated_sequences"
+    )
+    created_by = ForeignKey(
+        "User", on_delete=SET_NULL, null=True, related_name="created_sequences"
+    )
 
     class Meta:
         unique_together = (("index", "project"), ("project", "root"))
@@ -101,6 +121,16 @@ class Shot(Base, Metadata):
     index = PositiveIntegerField()
     project = ForeignKey(Project, on_delete=CASCADE, related_name="shots")
     sequence = ForeignKey(Sequence, on_delete=CASCADE, related_name="shots")
+    # We need to set these individualy because of the related_name argument
+    deleted_by = ForeignKey(
+        "User", on_delete=SET_NULL, null=True, related_name="deleted_shots"
+    )
+    updated_by = ForeignKey(
+        "User", on_delete=SET_NULL, null=True, related_name="updated_shots"
+    )
+    created_by = ForeignKey(
+        "User", on_delete=SET_NULL, null=True, related_name="created_shots"
+    )
 
     class Meta:
         unique_together = (
@@ -122,6 +152,16 @@ class Frame(Base, Metadata):
     sequence = ForeignKey(Sequence, on_delete=CASCADE, related_name="frames")
     shot = ForeignKey(Shot, on_delete=CASCADE, related_name="frames")
     valid = BooleanField(default=False)
+    # We need to set these individualy because of the related_name argument
+    deleted_by = ForeignKey(
+        "User", on_delete=SET_NULL, null=True, related_name="deleted_frames"
+    )
+    updated_by = ForeignKey(
+        "User", on_delete=SET_NULL, null=True, related_name="updated_frames"
+    )
+    created_by = ForeignKey(
+        "User", on_delete=SET_NULL, null=True, related_name="created_frames"
+    )
 
     class Meta:
         unique_together = (
@@ -142,6 +182,16 @@ class Asset(Base, Metadata):
     project = ForeignKey(Project, on_delete=CASCADE, related_name="assets")
     name = SlugField(default="untitled", unique=True)
     label = CharField(default="untitled", max_length=250)
+    # We need to set these individualy because of the related_name argument
+    deleted_by = ForeignKey(
+        "User", on_delete=SET_NULL, null=True, related_name="deleted_assets"
+    )
+    updated_by = ForeignKey(
+        "User", on_delete=SET_NULL, null=True, related_name="updated_assets"
+    )
+    created_by = ForeignKey(
+        "User", on_delete=SET_NULL, null=True, related_name="created_assets"
+    )
 
     class Meta:
         unique_together = (("name", "project"), ("project", "root"))
@@ -153,6 +203,16 @@ class Task(Base, Metadata):
     project = ForeignKey(Project, on_delete=CASCADE, related_name="tasks")
     name = SlugField(default="untitled")
     label = CharField(default="untitled", max_length=250)
+    # We need to set these individualy because of the related_name argument
+    deleted_by = ForeignKey(
+        "User", on_delete=SET_NULL, null=True, related_name="deleted_tasks"
+    )
+    updated_by = ForeignKey(
+        "User", on_delete=SET_NULL, null=True, related_name="updated_tasks"
+    )
+    created_by = ForeignKey(
+        "User", on_delete=SET_NULL, null=True, related_name="created_tasks"
+    )
 
     limit = (
         Q(app_label="api", model="Sequence")

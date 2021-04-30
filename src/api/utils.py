@@ -19,7 +19,7 @@ def get_instance_from_url(url, instance_class, error_name="ERROR"):
 
 
 def get_url_from_instance(model, request) -> str:
-    # TODO : Use serializer or relational fields to resolve the url
+    # TODO : Find a better way to do this, i don't understand how this reverse() function works
     return (
         str(reverse(viewname=f"{type(model).__name__.lower()}-list", request=request))
         + f"{str(model.id)}/"

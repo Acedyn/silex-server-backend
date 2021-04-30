@@ -16,10 +16,19 @@ Including another URLconf
 
 from django.urls import path, include
 from rest_framework.authtoken.views import obtain_auth_token
+from rest_framework_simplejwt import views as jwt_views
 from api.urls import router
 
 urlpatterns = [
     path("", include(router.urls)),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
-    path("api-token-auth/", obtain_auth_token, name="api_token_auth"),
+    path("auth/token/", obtain_auth_token, name="api_token_auth"),
+    path(
+        "auth/jwt/login/",
+        jwt_views.TokenObtainPairView.as_view(),
+        name="token_obtain_pair",
+    ),
+    path(
+        "auth/jwt/refresh/", jwt_views.TokenRefreshView.as_view(), name="token_refresh"
+    ),
 ]
