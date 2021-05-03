@@ -1,20 +1,21 @@
 from rest_framework import permissions
 from rest_framework.exceptions import ValidationError
 from api.utils import get_instance_from_url
+from api import views
 from api.models import Project
 
 
 class ProjectOwnerPermission(permissions.BasePermission):
     def has_permission(self, request, view):
+        # If the user is not authenticated block the access
+        if request.user.is_authenticated is False and request.method == "POST":
+            return False
+        # Restict access only for POST requests
+        if request.method != "POST" or isinstance(view, views.ProjectViewSet):
+            return True
         # If the user has permissions to create any project
         if request.user.has_perm("api.add_any_entity") and request.method == "POST":
             return True
-        # Restict access only for POST requests
-        if request.method != "POST":
-            return True
-        # If the user is not authenticated block the access
-        if request.user.is_authenticated is False:
-            return False
         # If the request is empty it means its just a request poke the server
         if request.data == {}:
             return True
@@ -44,6 +45,9 @@ class ProjectOwnerPermission(permissions.BasePermission):
         )
 
     def has_object_permission(self, request, view, obj):
+        # If the user is not authenticated block the access
+        if request.user.is_authenticated is False:
+            return False
         # If the user has permissions to edit any project
         if request.user.has_perm("api.change_any_entity") and request.method == "PATCH":
             return True
@@ -53,12 +57,12 @@ class ProjectOwnerPermission(permissions.BasePermission):
             and request.method == "DELETE"
         ):
             return True
-        # Give permissions for GET requests
-        if request.method == "GET":
+        # Give permissions for safe methods
+        if request.method in permissions.SAFE_METHODS:
             return True
-        # If the user is not authenticated block the access
-        if request.user.is_authenticated is False:
-            return False
+        # Is the entity is a project
+        if isinstance(obj, Project):
+            return obj in request.user.projects.all() or obj.created_by == request.user
         # Return true if the edited object belong to the user
         return (
             obj.project in request.user.projects.all()

@@ -65,7 +65,8 @@ class PermissionsTestCase(AuthentificatedTestBase):
 
         # CRUD authorized project
         response_create, response_update, response_delete = crud_project(self)
-        self.assertEqual(response_create.status_code, status.HTTP_201_CREATED)
+        # Here we expect a bad request because the project should already exist
+        self.assertEqual(response_create.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response_update.status_code, status.HTTP_200_OK)
         self.assertEqual(response_delete.status_code, status.HTTP_204_NO_CONTENT)
 

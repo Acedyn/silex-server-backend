@@ -146,7 +146,7 @@ class GroupViewSet(viewsets.ModelViewSet):
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [ProjectOwnerPermission]
 
     # Override the method called when creating an project (POST) to auto fill the name field
     def create(self, request, *args, **kwargs):
