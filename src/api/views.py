@@ -10,7 +10,10 @@ from api.utils import (
     get_instance_from_url,
 )
 from api.models import Project, Sequence, Shot, Frame, Asset, Task, User
-from api.permissions import ProjectOwnerPermission, IsAuthenticatedOrReadCreate
+from api.permissions import (
+    ProjectOwnerPermission,
+    IsAuthenticatedOrReadCreate,
+)
 from api.serializers import (
     UserSerializer,
     GroupSerializer,
@@ -120,7 +123,7 @@ class ParentedEntityViewSet(viewsets.ModelViewSet):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = get_user_model().objects.all().order_by("-date_joined")
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadCreate]
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)

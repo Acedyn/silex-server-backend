@@ -68,9 +68,14 @@ class ProjectOwnerPermission(permissions.BasePermission):
 
 class IsAuthenticatedOrReadCreate(permissions.BasePermission):
     def has_permission(self, request, view):
+        # Allow only safe metods or creation for unauthentificated users
         return bool(
             request.method in permissions.SAFE_METHODS
             or request.method == "POST"
             or request.user
             and request.user.is_authenticated
         )
+
+    def has_object_permission(self, request, view, obj):
+        # Allow only save methods
+        return bool(request.method in permissions.SAFE_METHODS)

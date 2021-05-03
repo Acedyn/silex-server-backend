@@ -5,16 +5,60 @@ from api.testing.test_base import AuthentificatedTestBase
 from api.models import Project
 
 
+########################################
+## Test utility
+########################################
+
+
+def create_new_project(test_case):
+    data = {
+        "root": "/anna/hello_world",
+        "width": 4096,
+        "height": 2160,
+        "label": "Hello World!",
+    }
+    return test_case.client.post("/projects/", data, format="json")
+
+
+def create_existing_project(test_case):
+    data = {
+        "root": "/tars/hello_world",
+        "framerate": 25,
+        "width": 4096,
+        "height": 2160,
+        "label": "Test Pipe",
+    }
+    return test_case.client.post("/projects/", data, format="json")
+
+
+def update_project(test_case):
+    # Get the already existing project, created in test_base.py
+    get_response = test_case.client.get(f"/projects/{test_case.dummy_project.id}/")
+
+    data = {
+        "root": "/tars/hello_world",
+    }
+    project_url = get_response.data["url"]
+    return test_case.client.patch(project_url, data, format="json")
+
+
+def delete_project(test_case):
+    # Get the already existing project, created in test_base.py
+    get_response = test_case.client.get(f"/projects/{test_case.dummy_project.id}/")
+
+    project_url = get_response.data["url"]
+    return test_case.client.delete(project_url)
+
+
+########################################
+## Running test
+########################################
+
+
 class ProjectTestCase(AuthentificatedTestBase):
     def test_create_new_project(self):
         print("\nTesting : Create new project ")
-        data = {
-            "root": "/anna/hello_world",
-            "width": 4096,
-            "height": 2160,
-            "label": "Hello World!",
-        }
-        response = self.client.post("/projects/", data, format="json")
+        response = create_new_project(self)
         # Test the returned values
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["framerate"], 25.0)
@@ -37,14 +81,7 @@ class ProjectTestCase(AuthentificatedTestBase):
 
     def test_create_existing_project(self):
         print("\nTesting : Create existing project ")
-        data = {
-            "root": "/tars/hello_world",
-            "framerate": 25,
-            "width": 4096,
-            "height": 2160,
-            "label": "Test Pipe",
-        }
-        response = self.client.post("/projects/", data, format="json")
+        response = create_existing_project(self)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(Project.objects.count(), 1)
@@ -64,15 +101,7 @@ class ProjectTestCase(AuthentificatedTestBase):
 
     def test_update_project(self):
         print("\nTesting : Update project ")
-        # Get the already existing project, created in test_base.py
-        get_response = self.client.get("/projects/")
-        self.assertEqual(get_response.data["count"], 1)
-
-        data = {
-            "root": "/tars/hello_world",
-        }
-        project_url = get_response.data["results"][0]["url"]
-        update_response = self.client.patch(project_url, data, format="json")
+        update_response = update_project(self)
 
         # Test the returned values
         self.assertEqual(update_response.status_code, status.HTTP_200_OK)
@@ -84,12 +113,7 @@ class ProjectTestCase(AuthentificatedTestBase):
 
     def test_delete_project(self):
         print("\nTesting : Delete project ")
-        # Get the already existing project, created in test_base.py
-        get_response = self.client.get("/projects/")
-        self.assertEqual(get_response.data["count"], 1)
-
-        project_url = get_response.data["results"][0]["url"]
-        delete_response = self.client.delete(project_url)
+        delete_response = delete_project(self)
 
         # Test the returned values
         self.assertEqual(delete_response.status_code, status.HTTP_204_NO_CONTENT)
