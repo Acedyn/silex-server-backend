@@ -3,7 +3,7 @@ from django.contrib.auth.models import Group
 from django.db.models import Model
 from django.utils.text import slugify
 from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import permissions, viewsets, status, serializers
 from api.utils import (
     request_inherit_fields,
@@ -128,10 +128,11 @@ class UserViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
         user_class = get_user_model()
-        token = Token.objects.create(
-            user=get_instance_from_url(response.data["url"], user_class)
+        token = RefreshToken.for_user(
+            get_instance_from_url(response.data["url"], user_class)
         )
-        response.data["token"] = token.key
+        response.data["access"] = str(token.access_token)
+        response.data["refresh"] = str(token)
         return response
 
 
