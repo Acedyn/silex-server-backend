@@ -7,17 +7,23 @@ from api.models import Project
 
 class ProjectOwnerPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        # If the user is not authenticated block the access
-        if request.user.is_authenticated is False and request.method == "POST":
-            return False
-        # Restict access only for POST requests
-        if request.method != "POST" or isinstance(view, views.ProjectViewSet):
+        # Allow any safe methods or empty requests (empty request are pokes)
+        if request.method in permissions.SAFE_METHODS or request.data == {}:
             return True
-        # If the user has permissions to create any project
+        # Block non safe unauthentificated requests
+        if (
+            request.user.is_authenticated is False
+            and request.method not in permissions.SAFE_METHODS
+        ):
+            return False
+        # If the user has permissions to create any entity
         if request.user.has_perm("api.add_any_entity") and request.method == "POST":
             return True
-        # If the request is empty it means its just a request poke the server
-        if request.data == {}:
+
+        # TODO: Check if the view is a WorkEntityView
+
+        # Allow Authentificated requests on entities that do not have parents
+        if request.user.is_authenticated is True and not hasattr(view, "parents_chain"):
             return True
         # Test if the data provided the parent
         try:
@@ -45,8 +51,14 @@ class ProjectOwnerPermission(permissions.BasePermission):
         )
 
     def has_object_permission(self, request, view, obj):
-        # If the user is not authenticated block the access
-        if request.user.is_authenticated is False:
+        # Allow any safe methods or empty requests (empty request are pokes)
+        if request.method in permissions.SAFE_METHODS or request.data == {}:
+            return True
+        # Block non safe unauthentificated requests
+        if (
+            request.user.is_authenticated is False
+            and request.method not in permissions.SAFE_METHODS
+        ):
             return False
         # If the user has permissions to edit any project
         if request.user.has_perm("api.change_any_entity") and request.method == "PATCH":
@@ -57,11 +69,9 @@ class ProjectOwnerPermission(permissions.BasePermission):
             and request.method == "DELETE"
         ):
             return True
-        # Give permissions for safe methods
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        # Is the entity is a project
-        if isinstance(obj, Project):
+
+        # If the entity does not have parents, test if the entity itself belong to the user
+        if not hasattr(obj, "project"):
             return obj in request.user.projects.all() or obj.created_by == request.user
         # Return true if the edited object belong to the user
         return (
