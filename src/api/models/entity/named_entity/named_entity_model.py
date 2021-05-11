@@ -1,5 +1,5 @@
 from django.db.models import SlugField, CharField
-import api.models.entity.entity_model import Entity
+from api.models.entity.entity_model import Entity
 
 
 ########################################
